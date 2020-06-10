@@ -10,7 +10,10 @@ namespace CarMechanic
     {
         public int IdKlient { get; set; }
         private Broker broker;
-        public BlockingCollection<Wiadomosc> ListaWiadomosci = new BlockingCollection<Wiadomosc>(new ConcurrentQueue<Wiadomosc>());
+
+        public BlockingCollection<Wiadomosc> ListaWiadomosci =
+            new BlockingCollection<Wiadomosc>(new ConcurrentQueue<Wiadomosc>(), boundedCapacity: 2);
+
         private Random rand = new Random();
 
         public Klient(Broker broker, int idKlient)
@@ -19,6 +22,7 @@ namespace CarMechanic
             IdKlient = idKlient;
 
             Thread obsluga = new Thread(odbierajWiadomosci);
+            obsluga.Name = "Klient " + this.IdKlient;
             obsluga.Start();
             Thread szukaj = new Thread(szukajMechanika);
             szukaj.Start();
@@ -28,20 +32,18 @@ namespace CarMechanic
         {
             while (true)
             {
-                Wiadomosc w = new Wiadomosc(this.IdKlient, rand.Next(1, 101), rand.Next(1, 4));
+                Wiadomosc w = new Wiadomosc(this.IdKlient, rand.Next(10, 101), rand.Next(1, 4));
                 w.zlecenie = Zdarzenie.szukaj;
                 broker.dodajZlecenie(w);
-                Thread.Sleep(10000);
+                Thread.Sleep(rand.Next(20000, 40000));
             }
-
         }
 
         private void naprawAuto(Wiadomosc w)
         {
-            Wiadomosc _w = new Wiadomosc(this.IdKlient, w.idNadawca, w.poziomTrudnosci, w.priorytetNaprawczy);
-            _w.zlecenie = Zdarzenie.napraw;
-            broker.dodajZlecenie(_w);
-            Thread.Sleep(10000);
+            Wiadomosc nW = new Wiadomosc(this.IdKlient, w.idNadawca, w.poziomTrudnosci, w.cena, w.jakoscNaprawy, w.priorytetNaprawczy);
+            nW.zlecenie = Zdarzenie.napraw;
+            broker.dodajZlecenie(nW);
         }
 
         public void odbierajWiadomosci()
@@ -57,6 +59,8 @@ namespace CarMechanic
                     break;
                 }
             }
+
+            // Thread.Sleep(rand.Next(10000, 20000));
         }
 
         public void dodajWiadomosc(Wiadomosc w)

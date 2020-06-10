@@ -58,5 +58,23 @@ namespace CarMechanic
             this.jakoscNaprawy = jakoscNaprawy;
             this.priorytetNaprawczy = priorytetNaprawczy;
         }
+
+        public Wiadomosc(int idNadawca, int idOdbiorcy, int poziomTrudnosci, double jakoscNaprawy)
+        {
+            this.idNadawca = idNadawca;
+            this.idOdbiorcy = idOdbiorcy;
+            this.poziomTrudnosci = poziomTrudnosci;
+            this.jakoscNaprawy = jakoscNaprawy;
+        }
+
+        public Wiadomosc(int idNadawca, int idOdbiorcy, int poziomTrudnosci, double cena, double jakoscNaprawy, int priorytetNaprawczy)
+        {
+            this.idNadawca = idNadawca;
+            this.idOdbiorcy = idOdbiorcy;
+            this.poziomTrudnosci = poziomTrudnosci;
+            this.cena = cena;
+            this.jakoscNaprawy = jakoscNaprawy;
+            this.priorytetNaprawczy = priorytetNaprawczy;
+        }
     }
 }

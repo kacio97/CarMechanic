@@ -16,7 +16,8 @@ namespace CarMechanic
         private Broker broker;
 
         private BlockingCollection<Wiadomosc> listaZlecen =
-            new BlockingCollection<Wiadomosc>(new ConcurrentQueue<Wiadomosc>());
+            new BlockingCollection<Wiadomosc>(new ConcurrentQueue<Wiadomosc>(), boundedCapacity: 10);
+        private Random rand = new Random();
 
         public Mechanik(Broker broker, int idMechanika, string nazwa, double umiejetnosci, double cenaBazowa)
         {
@@ -25,34 +26,73 @@ namespace CarMechanic
             this.nazwa = nazwa;
             this.umiejetnosci = umiejetnosci;
             this.cenaBazowa = cenaBazowa;
+
+            Thread obsluga = new Thread(odbierajZlecenia);
+            obsluga.Name = "Mechanik " + this.idMechanika + " " + this.nazwa;
+            obsluga.Start();
         }
 
         public void odbierajZlecenia()
         {
             while (true)
             {
-                Wiadomosc _w;
-                _w = listaZlecen.Take();
+                Wiadomosc nW;
+                nW = listaZlecen.Take();
 
-                switch (_w.zlecenie)
+                
+                switch (nW.zlecenie)
                 {
                     case Zdarzenie.ofertaNaprawy:
                     {
-                        ocenZlecenie(_w);
+                        ocenZlecenie(nW);
+                        break;
+                    }
+                    case Zdarzenie.napraw:
+                    {
+                        napraw(nW);
                         break;
                     }
                 }
+                // Thread.Sleep(rand.Next(10000,30000));
+
             }
+        }
+
+        private void napraw(Wiadomosc w)
+        {
+            double exp = ((w.poziomTrudnosci * w.jakoscNaprawy) / w.cena);
+            double premiaDoPensji = (w.poziomTrudnosci * w.jakoscNaprawy) / w.cena;
+            exp = Math.Round(exp, 2);
+            premiaDoPensji = Math.Round(premiaDoPensji, 3);
+            if (this.umiejetnosci >= 100)
+            {
+                this.umiejetnosci = 100;
+                this.cenaBazowa += premiaDoPensji;
+            }
+            else
+            {
+                this.umiejetnosci += exp;
+                this.cenaBazowa += (premiaDoPensji * 5);
+            }
+
+            Console.WriteLine("Mechanik " + this.nazwa + " naprawia auto i zyskuje " + exp + " doswiadczenia ");
+            Console.WriteLine("Calkowite doswiadczenie: " + this.umiejetnosci + " Obecna stawka: " + this.cenaBazowa);
         }
 
         private void ocenZlecenie(Wiadomosc w)
         {
+
+            //TODO: DLUGOSC OCENY ZLECENIA ZALEZNA OD POZIOMU TRUDNOSCI
             double jakoscUslugi = umiejetnosci / w.poziomTrudnosci;
+            if (jakoscUslugi > 1)
+                jakoscUslugi = 1.00;
             double cena = cenaBazowa + ((cenaBazowa / 10) * w.poziomTrudnosci) + umiejetnosci;
-            
-            Wiadomosc _w = new Wiadomosc(this.idMechanika, w.idNadawca, cena, jakoscUslugi, w.priorytetNaprawczy);
-            _w.zlecenie = Zdarzenie.ofertaNaprawy;
-            broker.dodajZlecenie(_w);
+            jakoscUslugi = Math.Round(jakoscUslugi, 2);
+            cena = Math.Round(cena, 2);
+
+            Wiadomosc nW = new Wiadomosc(this.idMechanika, w.idNadawca, w.poziomTrudnosci, cena, jakoscUslugi, w.priorytetNaprawczy);
+            nW.zlecenie = Zdarzenie.ofertaNaprawy;
+            broker.dodajZlecenie(nW);
         }
 
         public void dodajZlecenie(Wiadomosc w)
