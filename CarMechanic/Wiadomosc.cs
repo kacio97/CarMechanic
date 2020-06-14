@@ -19,6 +19,8 @@ namespace CarMechanic
         //3 - wysrodkowane
         public int priorytetNaprawczy { get; set; }
 
+        public Wiadomosc() { }
+
 
 
         public Wiadomosc(int idNadawca, int idOdbiorcy)
