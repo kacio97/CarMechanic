@@ -15,7 +15,7 @@ namespace CarMechanic
         private Broker broker;
 
         public BlockingCollection<Wiadomosc> ListaWiadomosci =
-            new BlockingCollection<Wiadomosc>(new ConcurrentQueue<Wiadomosc>(), boundedCapacity: 2);
+            new BlockingCollection<Wiadomosc>(5);
 
         private Random rand = new Random();
 
@@ -37,25 +37,36 @@ namespace CarMechanic
         {
             while (true)
             {
-                // if (!szukam )
-                // {
-                //     // Thread.Sleep(10000);
-                //     continue;
-                // }
-                // szukam = false;
+                if (!szukam )
+                {
+                    // Thread.Sleep(5000);
+                    continue;
+                }
+               
+                    Wiadomosc w = new Wiadomosc();
+                    w.idNadawca = IdKlient;
+                    w.poziomTrudnosci = rand.Next(10, 100);
+                    w.priorytetNaprawczy = rand.Next(1, 4);
+                    w.zlecenie = Zdarzenie.szukaj;
+                    broker.dodajZlecenie(w);
+
+                    Wiadomosc wk = new Wiadomosc();
+                wk.zlecenie = Zdarzenie.oczekuj;
+                dodajWiadomosc(wk);
+
+                Thread.Sleep(rand.Next(10000, 20000));
+                
 
                 // Wiadomosc w = new Wiadomosc(this.IdKlient, rand.Next(10, 101), rand.Next(1, 4));
 
-                Wiadomosc w = new Wiadomosc();
-                w.idNadawca = this.IdKlient;
-                w.poziomTrudnosci = rand.Next(10, 100);
-                w.priorytetNaprawczy = rand.Next(1, 4);
-                w.zlecenie = Zdarzenie.szukaj;
-                broker.dodajZlecenie(w);
-                Thread.Sleep(rand.Next(20000, 40000));
+               
             }
         }
 
+        private void setBool(bool b)
+        {
+            this.szukam = b;
+        }
 
         private void naprawAuto(Wiadomosc w)
         {
@@ -84,6 +95,17 @@ namespace CarMechanic
                     case Zdarzenie.znaleziono:
                     {
                         naprawAuto(w);
+                        break;
+                    }
+                    case Zdarzenie.ukonczonoZlecenie:
+                    {
+                        setBool(true);
+                        Console.WriteLine("\nKlient " + IdKlient + " odbiera swoje auto ! \n");
+                        break;
+                    }
+                    case Zdarzenie.oczekuj:
+                    {
+                        setBool(false);
                         break;
                     }
                 }

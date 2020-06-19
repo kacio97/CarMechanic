@@ -10,6 +10,7 @@ namespace CarMechanic
         napraw,
         znaleziono,
         ofertaNaprawy,
-        ukonczonoZlecenie
+        ukonczonoZlecenie,
+        oczekuj
     }
 }

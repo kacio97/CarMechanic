@@ -18,7 +18,7 @@ namespace CarMechanic
         public Dictionary<int, List<Oferty>> dziennikOfert = new Dictionary<int, List<Oferty>>();
 
         public static BlockingCollection<Wiadomosc> kolejka =
-            new BlockingCollection<Wiadomosc>(new ConcurrentQueue<Wiadomosc>(), boundedCapacity: 20);
+            new BlockingCollection<Wiadomosc>(boundedCapacity: 75);
 
 
         private int iloscOfert = 0;

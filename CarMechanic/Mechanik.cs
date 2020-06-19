@@ -16,7 +16,7 @@ namespace CarMechanic
         private Broker broker;
 
         private BlockingCollection<Wiadomosc> listaZlecen =
-            new BlockingCollection<Wiadomosc>(new ConcurrentQueue<Wiadomosc>(), boundedCapacity: 10);
+            new BlockingCollection<Wiadomosc>(boundedCapacity: 20);
 
         private Random rand = new Random();
 
@@ -102,9 +102,9 @@ namespace CarMechanic
             exp = Math.Round(exp, 2);
             premiaDoPensji = Math.Round(premiaDoPensji, 2);
 
-            int czas = (int)this.umiejetnosci * w.poziomTrudnosci * 7;
+            int czas = (int)this.umiejetnosci * w.poziomTrudnosci * rand.Next(4,8);
 
-           // Thread.Sleep(czas);
+           Thread.Sleep(czas);
 
             Console.WriteLine("\nMechanik " + this.nazwa + " id " + this.idMechanika + " naprawia auto dla klienta " +
                               w.idNadawca + "\n Zyskuje " + exp + " doświadczenia oraz premię do pensji: " +
@@ -114,12 +114,12 @@ namespace CarMechanic
                               Math.Round(this.cenaBazowa, 2) + " zł " +
                               "\n");
 
-            // Wiadomosc nW = new Wiadomosc();
-            //
-            // nW.idOdbiorcy = w.idNadawca;
-            // nW.zlecenie = Zdarzenie.ukonczonoZlecenie;
-            //
-            // broker.dodajZlecenie(nW);
+            Wiadomosc nW = new Wiadomosc();
+            
+            nW.idOdbiorcy = w.idNadawca;
+            nW.zlecenie = Zdarzenie.ukonczonoZlecenie;
+            
+            broker.dodajZlecenie(nW);
         }
 
         private void ocenZlecenie(Wiadomosc w)
